@@ -1,0 +1,18 @@
+[submodule "libs/cpr"]
+	path = libs/cpr
+	url = https://github.com/whoshuu/cpr
+[submodule "libs/fmt"]
+	path = libs/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/nlohmann/json
+[submodule "libs/libcommuni"]
+	path = libs/libcommuni
+	url = https://github.com/communi/libcommuni
+[submodule "libs/loguru"]
+	path = libs/loguru
+	url = https://github.com/emilk/loguru
+[submodule "libs/spdlog"]
+	path = libs/spdlog
+	url = https://github.com/gabime/spdlog
