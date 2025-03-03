@@ -63,3 +63,39 @@ std::string remove_admin(const std::string& sender_hostmask, const std::string& 
         return IRC_COLORS["color_red"] + "⚠️ Failed to remove admin." + IRC_COLORS["color_reset"];
     }
 }
+
+// ✅ Add repository to tracking
+std::string add_repo(const std::string& sender_hostmask, const std::string& repo) {
+    if (!is_admin(sender_hostmask)) {
+        return IRC_COLORS["color_red"] + "⚠️ You are not authorized to add repositories." + IRC_COLORS["color_reset"];
+    }
+
+    try {
+        pqxx::connection conn(DB_CONN);
+        pqxx::work txn(conn);
+        txn.exec("INSERT INTO tracked_repos (repo_name) VALUES (" + txn.quote(repo) + ") ON CONFLICT DO NOTHING;");
+        txn.commit();
+        return IRC_COLORS["color_green"] + "✅ Repository added: " + repo + IRC_COLORS["color_reset"];
+    } catch (const std::exception& e) {
+        spdlog::error("Error adding repo: {}", e.what());
+        return IRC_COLORS["color_red"] + "⚠️ Failed to add repository." + IRC_COLORS["color_reset"];
+    }
+}
+
+// ✅ Remove repository from tracking
+std::string remove_repo(const std::string& sender_hostmask, const std::string& repo) {
+    if (!is_admin(sender_hostmask)) {
+        return IRC_COLORS["color_red"] + "⚠️ You are not authorized to remove repositories." + IRC_COLORS["color_reset"];
+    }
+
+    try {
+        pqxx::connection conn(DB_CONN);
+        pqxx::work txn(conn);
+        txn.exec("DELETE FROM tracked_repos WHERE repo_name = " + txn.quote(repo) + ";");
+        txn.commit();
+        return IRC_COLORS["color_red"] + "❌ Repository removed: " + repo + IRC_COLORS["color_reset"];
+    } catch (const std::exception& e) {
+        spdlog::error("Error removing repo: {}", e.what());
+        return IRC_COLORS["color_red"] + "⚠️ Failed to remove repository." + IRC_COLORS["color_reset"];
+    }
+}

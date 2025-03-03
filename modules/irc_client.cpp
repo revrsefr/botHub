@@ -140,6 +140,31 @@ void IRCClient::onPrivateMessageReceived(IrcPrivateMessage* message) {
             : IRC_COLORS["color_red"] + "❌ " + target_hostmask + " is NOT an admin." + IRC_COLORS["color_reset"];
         connection->sendCommand(IrcCommand::createMessage(target_channel, QString::fromStdString(response)));
     }
+    else if (content.startsWith("!git add ")) {
+        if (!is_admin(sender_hostmask)) {
+            std::string response = IRC_COLORS["color_red"] + "⚠️ You are not authorized to add repositories." + IRC_COLORS["color_reset"];
+            connection->sendCommand(IrcCommand::createMessage(target_channel, QString::fromStdString(response)));
+            return;
+        }
+        std::string repo = content.mid(9).toStdString();
+        std::string response = add_repo(sender_hostmask, repo);
+        connection->sendCommand(IrcCommand::createMessage(target_channel, QString::fromStdString(response)));
+    }
+    else if (content.startsWith("!git del ")) {
+        if (!is_admin(sender_hostmask)) {
+            std::string response = IRC_COLORS["color_red"] + "⚠️ You are not authorized to remove repositories." + IRC_COLORS["color_reset"];
+            connection->sendCommand(IrcCommand::createMessage(nick, QString::fromStdString(response)));
+            return;
+        }
+        std::string repo = content.mid(9).toStdString();
+        std::string response = remove_repo(sender_hostmask, repo);
+        connection->sendCommand(IrcCommand::createMessage(target_channel, QString::fromStdString(response)));
+    }
+    else if (content.startsWith("!git check last ")) {
+        std::string repo = content.mid(16).toStdString();
+        std::string response = get_last_commit(repo);  // ✅ Fetch directly from GitHub API
+        connection->sendCommand(IrcCommand::createMessage(target_channel, QString::fromStdString(response)));
+    }
 }
 
 // ✅ Rehash Configuration (No Reconnect)

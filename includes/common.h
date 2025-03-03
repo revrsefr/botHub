@@ -20,6 +20,11 @@ bool is_admin(const std::string& hostmask);
 std::string add_admin(const std::string& sender_hostmask, const std::string& new_admin_hostmask);
 std::string remove_admin(const std::string& sender_hostmask, const std::string& target_hostmask);
 
+// === GitHub Tracking Functions ===
+std::string add_repo(const std::string& sender_hostmask, const std::string& repo);
+std::string remove_repo(const std::string& sender_hostmask, const std::string& repo);
+std::string get_last_commit(const std::string& repo);
+
 // === Functions for GitHub Events ===
 void fetch_latest_commit(const std::string& repo);
 std::vector<std::string> get_tracked_repos();

@@ -69,6 +69,16 @@ void load_config() {
     std::cout << "[DEBUG] CHANNELS: " << CHANNELS << std::endl;
     std::cout << "[INFO] Configuration loaded successfully!" << std::endl;
 
+    // ✅ Load GitHub API key
+    pugi::xml_node github = doc.child("github").child("api_key");
+    GITHUB_API_KEY = github.attribute("value").as_string();
+    
+    if (GITHUB_API_KEY.empty()) {
+        spdlog::warn("⚠️ GitHub API key not found in config!");
+    } else {
+        spdlog::info("✅ GitHub API key loaded.");
+    }
+    
     // ✅ Load default admin
     auto admin_node = doc.child("admin").child("administrator");
     std::string default_admin = admin_node.attribute("user").as_string();
