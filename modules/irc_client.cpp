@@ -51,6 +51,7 @@ void IRCClient::onConnected() {
 
     // ✅ Wait for ACK from server
     QTimer::singleShot(2000, this, &IRCClient::startSASLAuth);
+    
 }
 
 // ✅ Start SASL Authentication
@@ -98,6 +99,11 @@ void IRCClient::joinChannels() {
         spdlog::info("Joining channel: {}", channel.toStdString());
         connection->sendCommand(IrcCommand::createJoin(channel));
     }
+     // ✅ Start checking for new commits AFTER joining channels
+     QTimer::singleShot(5000, this, [this]() {
+        spdlog::info("✅ All channels joined. Starting commit checker...");
+        start_commit_checker(this);
+    });
 }
 
 // ✅ Handle disconnection
@@ -164,6 +170,19 @@ void IRCClient::onPrivateMessageReceived(IrcPrivateMessage* message) {
         std::string repo = content.mid(16).toStdString();
         std::string response = get_last_commit(repo);  // ✅ Fetch directly from GitHub API
         connection->sendCommand(IrcCommand::createMessage(target_channel, QString::fromStdString(response)));
+    }
+    
+}
+
+// ✅ Function to send messages to IRC channels (Now inside `IRCClient`)
+void IRCClient::sendIrcMessage(const std::string& message) {
+    if (!connection) {
+        spdlog::error("❌ IRC Connection is NULL. Cannot send message.");
+        return;
+    }
+    QStringList channelList = QString::fromStdString(CHANNELS).split(",", Qt::SkipEmptyParts);
+    for (const QString& channel : channelList) {
+        connection->sendCommand(IrcCommand::createMessage(channel, QString::fromStdString(message)));
     }
 }
 

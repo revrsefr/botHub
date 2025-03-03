@@ -4,8 +4,13 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <QObject>
+#include <QTimer>
 
-// Include utility headers correctly (without "utility/")
+// ✅ Forward declaration of `IRCClient`
+class IRCClient;
+
+// Include utility 
 #include "logger.h"   // ✅ Fixed path
 #include "helpers.h"  // ✅ Fixed path
 
@@ -28,6 +33,12 @@ std::string get_last_commit(const std::string& repo);
 // === Functions for GitHub Events ===
 void fetch_latest_commit(const std::string& repo);
 std::vector<std::string> get_tracked_repos();
+
+// ✅ Declare function to start commit checking
+void start_commit_checker(IRCClient* bot);
+
+// ✅ Declare function to send messages to IRC
+void send_irc_message(const std::string& message);
 
 // === Database Functions ===
 void initialize_database();

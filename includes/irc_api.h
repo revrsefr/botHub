@@ -21,6 +21,7 @@ public:
     void run();
     void sendRaw(const QString& message);
     void joinChannels();
+    void sendIrcMessage(const std::string& message);
 
 signals:
     void disconnected();
