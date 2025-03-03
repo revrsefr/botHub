@@ -32,6 +32,8 @@ private slots:
     void sendSASLCredentials();
     void finalizeAuth();
     void onPrivateMessageReceived(IrcPrivateMessage* message);
+    void rehash();
+    void restart();
 
 private:
     IrcConnection* connection;

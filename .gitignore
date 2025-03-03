@@ -1,2 +1,6 @@
 run/
 config.conf
+*.so
+*.o
+moc_irc_api.cpp
+moc_irc_api.o

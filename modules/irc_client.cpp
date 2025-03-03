@@ -112,6 +112,7 @@ void IRCClient::run() {
     QCoreApplication::exec();
 }
 
+// ✅ Handle Private Messages (Admin Commands)
 void IRCClient::onPrivateMessageReceived(IrcPrivateMessage* message) {
     QString nick = message->nick();
     QString host = message->host();
@@ -141,3 +142,16 @@ void IRCClient::onPrivateMessageReceived(IrcPrivateMessage* message) {
     }
 }
 
+// ✅ Rehash Configuration (No Reconnect)
+void IRCClient::rehash() {
+    spdlog::info("🔄 Reloading configuration...");
+    load_config();
+    spdlog::info("✅ Configuration reloaded.");
+}
+
+// ✅ Restart Bot (Reconnect)
+void IRCClient::restart() {
+    spdlog::info("🔄 Restarting bot...");
+    connection->quit();
+    QTimer::singleShot(3000, this, &IRCClient::connectToServer);
+}
