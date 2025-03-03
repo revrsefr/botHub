@@ -63,3 +63,17 @@ void store_commit_info(const std::string& repo, const std::string& sha, const st
         spdlog::error("Database error: {}", e.what());
     }
 }
+
+bool is_commit_stored(const std::string& repo, const std::string& sha) {
+    try {
+        pqxx::connection conn(DB_CONN);
+        pqxx::work txn(conn);
+        pqxx::result res = txn.exec(
+            "SELECT 1 FROM commits WHERE repo_name = " + txn.quote(repo) + " AND sha = " + txn.quote(sha) + " LIMIT 1;"
+        );
+        return !res.empty();
+    } catch (const std::exception& e) {
+        spdlog::error("❌ Database error while checking commit: {}", e.what());
+        return false;
+    }
+}

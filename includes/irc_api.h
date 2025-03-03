@@ -40,4 +40,8 @@ private:
     IrcConnection* connection;
 };
 
+// globally accessible function
+extern IRCClient* global_irc_client;  
+void send_irc_message(const std::string& message);
+
 #endif // IRC_API_H

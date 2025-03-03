@@ -6,13 +6,8 @@
 #include <map>
 #include <QObject>
 #include <QTimer>
-
-// ✅ Forward declaration of `IRCClient`
-class IRCClient;
-
-// Include utility 
-#include "logger.h"   // ✅ Fixed path
-#include "helpers.h"  // ✅ Fixed path
+#include "logger.h"
+#include "helpers.h"
 
 // === Database Connection ===
 extern std::string DB_CONN;
@@ -35,7 +30,8 @@ void fetch_latest_commit(const std::string& repo);
 std::vector<std::string> get_tracked_repos();
 
 // ✅ Declare function to start commit checking
-void start_commit_checker(IRCClient* bot);
+void start_commit_checker();
+void check_for_new_commits();
 
 // ✅ Declare function to send messages to IRC
 void send_irc_message(const std::string& message);
@@ -43,5 +39,6 @@ void send_irc_message(const std::string& message);
 // === Database Functions ===
 void initialize_database();
 void store_commit_info(const std::string& repo, const std::string& sha, const std::string& author, const std::string& message, const std::string& url, int additions, int deletions, int changes);
+bool is_commit_stored(const std::string& repo, const std::string& sha);
 
 #endif
