@@ -2,6 +2,7 @@
 #include "irc_api.h"
 #include "config.h"
 #include "common.h"
+#include "logger.h"
 #include <spdlog/spdlog.h>
 #include <QCoreApplication>
 #include <QFile>
@@ -9,6 +10,9 @@
 #include <csignal>
 #include <unistd.h>
 #include <filesystem>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #define PID_FILE "run/gitbot.pid"
 
@@ -70,6 +74,8 @@ int main(int argc, char* argv[]) {
     std::string command = argv[1];
 
     if (command == "start") {
+
+        initialize_logger();
         spdlog::info("Bot starting...");
     
         // Fork process to run in the background
@@ -92,9 +98,9 @@ int main(int argc, char* argv[]) {
         write_pid();
     
         // Redirect standard input/output to /dev/null
-        freopen("/dev/null", "r", stdin);
-        freopen("/dev/null", "w", stdout);
-        freopen("/dev/null", "w", stderr);
+        freopen("/dev/null", "r", stdin); // Keep stdin redirected
+        freopen("run/logs/bot.log", "a", stdout);  // Append logs instead of discarding them
+        freopen("run/logs/bot.log", "a", stderr);  // Append errors instead of discarding them
     
         // Set up signal handling
         signal(SIGUSR1, signal_handler);  // Rehash

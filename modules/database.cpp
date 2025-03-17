@@ -39,28 +39,24 @@ void initialize_database() {
     }
 }
 
-void store_commit_info(const std::string& repo, const std::string& sha, const std::string& author, const std::string& message, const std::string& url, int additions, int deletions, int changes) {
+void store_commit_info(const std::string& repo, const std::string& sha, const std::string& author, 
+                       const std::string& message, const std::string& url, int additions, 
+                       int deletions, int changes) {
     try {
         pqxx::connection conn(DB_CONN);
-        if (conn.is_open()) {
-            spdlog::info("Connected to PostgreSQL for inserting commit.");
-        } else {
-            spdlog::error("Failed to connect to database!");
-            return;
-        }
-
         pqxx::work txn(conn);
-        spdlog::info("Storing commit: {} - {}", repo, sha);
 
-        txn.exec("INSERT INTO commits (repo_name, sha, author, message, url, additions, deletions, changes) VALUES (" +
-                 txn.quote(repo) + ", " + txn.quote(sha) + ", " + txn.quote(author) + ", " +
-                 txn.quote(message) + ", " + txn.quote(url) + ", " +
-                 txn.quote(additions) + ", " + txn.quote(deletions) + ", " + txn.quote(changes) + ");");
+        txn.exec_params(
+            "INSERT INTO commits (repo_name, sha, author, commit_hash, message, timestamp) "
+            "VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) "
+            "ON CONFLICT (commit_hash) DO NOTHING;",  // Prevent duplicate commits
+            repo, sha, author, sha, message
+        );
 
         txn.commit();
-        spdlog::info("Commit stored successfully.");
+        spdlog::info("✅ Commit stored: [{}] {} - {}", repo, sha, message);
     } catch (const std::exception& e) {
-        spdlog::error("Database error: {}", e.what());
+        spdlog::error("❌ Database error while storing commit: {}", e.what());
     }
 }
 

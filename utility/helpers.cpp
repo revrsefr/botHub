@@ -1,4 +1,4 @@
-#include "../includes/common.h"
+#include "common.h"
 #include <vector>
 #include <string>
 #include <sstream>

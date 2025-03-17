@@ -103,20 +103,25 @@ void IRCClient::joinChannels() {
         spdlog::info("Joining channel: {}", channel.toStdString());
         connection->sendCommand(IrcCommand::createJoin(channel));
     }
-    // ✅ Start commit checking AFTER joining channels
-    QTimer::singleShot(5000, this, start_commit_checker);
+
+    spdlog::info("✅ Starting commit checker after joining channels...");
+    QTimer::singleShot(5000, start_commit_checker);
 }
 
-// ✅ Expose function for sending messages
 void IRCClient::sendIrcMessage(const std::string& message) {
+    if (!connection) {
+        spdlog::error("❌ IRC Connection is NULL. Cannot send message.");
+        return;
+    }
+
     QStringList channelList = QString::fromStdString(CHANNELS).split(",", Qt::SkipEmptyParts);
     for (const QString& channel : channelList) {
+        spdlog::info("📢 Sending message to IRC: {}", message);
         connection->sendCommand(IrcCommand::createMessage(channel, QString::fromStdString(message)));
     }
 }
-
-// ✅ Global function to send messages
 void send_irc_message(const std::string& message) {
+    spdlog::info("📢 Sending message to IRC: {}", message);
     if (global_irc_client) {
         global_irc_client->sendIrcMessage(message);
     } else {

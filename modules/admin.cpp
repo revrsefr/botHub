@@ -73,12 +73,21 @@ std::string add_repo(const std::string& sender_hostmask, const std::string& repo
     try {
         pqxx::connection conn(DB_CONN);
         pqxx::work txn(conn);
-        txn.exec("INSERT INTO tracked_repos (repo_name) VALUES (" + txn.quote(repo) + ") ON CONFLICT DO NOTHING;");
+
+        // ✅ Check if repo is already in the database
+        pqxx::result res = txn.exec_params("SELECT 1 FROM tracked_repos WHERE repo_name = $1", repo);
+        if (!res.empty()) {
+            return IRC_COLORS["color_yellow"] + "⚠️ Repository already being tracked: " + repo + IRC_COLORS["color_reset"];
+        }
+
+        // ✅ Insert new repo
+        txn.exec_params("INSERT INTO tracked_repos (repo_name) VALUES ($1)", repo);
         txn.commit();
+
         return IRC_COLORS["color_green"] + "✅ Repository added: " + repo + IRC_COLORS["color_reset"];
     } catch (const std::exception& e) {
-        spdlog::error("Error adding repo: {}", e.what());
-        return IRC_COLORS["color_red"] + "⚠️ Failed to add repository." + IRC_COLORS["color_reset"];
+        spdlog::error("❌ Database error in add_repo: {}", e.what());
+        return IRC_COLORS["color_red"] + "❌ Error adding repository." + IRC_COLORS["color_reset"];
     }
 }
 
