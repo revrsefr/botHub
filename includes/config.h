@@ -17,6 +17,7 @@ extern std::string CHANNELS;
 extern std::string GITHUB_API_KEY;
 extern std::string DB_CONN;
 extern std::map<std::string, std::string> IRC_COLORS;
+extern std::map<std::string, std::string> COMMIT_COLORS;
 
 void load_config();
 std::map<std::string, std::string> read_config(const std::string& file_path);

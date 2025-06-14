@@ -1,0 +1,9 @@
+DEFINES+=IRC_SHARED
+IRC_VERSION=3.7.0
+IRC_VERSION_MAJOR=3
+IRC_VERSION_MINOR=7
+IRC_VERSION_PATCH=0
+IRC_INSTALL_LIBS=/home/reverse/irc/bots/botHub/install/lib
+IRC_INSTALL_BINS=/home/reverse/irc/bots/botHub/install/bin
+IRC_INSTALL_HEADERS=/home/reverse/irc/bots/botHub/install/include
+IRC_INSTALL_FEATURES=/home/reverse/irc/bots/botHub/install/features

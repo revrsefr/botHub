@@ -1,4 +1,3 @@
-
 #include "common.h"
 #include "config.h"
 #include "irc_api.h"
@@ -8,9 +7,9 @@
 #include <spdlog/spdlog.h>
 #include <QObject>
 #include <QTimer>
+#include <algorithm>
 
 using json = nlohmann::json;
-
 
 // ✅ Get the list of tracked repositories from the database
 std::vector<std::string> get_tracked_repos() {
@@ -23,23 +22,21 @@ std::vector<std::string> get_tracked_repos() {
         for (const auto& row : res) {
             std::string repo = row[0].as<std::string>();
             repos.push_back(repo);
-            
-            // 🛑 Debugging log
-            spdlog::info("🔍 Tracked repo from DB: {}", repo);
+            spdlog::info("Tracked repo from DB: {}", repo);
         }
     } catch (const std::exception& e) {
-        spdlog::error("❌ Error fetching tracked repositories: {}", e.what());
+        spdlog::error("Error fetching tracked repositories: {}", e.what());
     }
     return repos;
 }
 
 void start_commit_checker() {
-    spdlog::info("✅ Starting commit checker every 2 minutes...");
+    spdlog::info("Starting commit checker every 2 minutes...");
     QTimer* timer = new QTimer();
     QObject::connect(timer, &QTimer::timeout, []() {
         check_for_new_commits();
     });
-    timer->start(120000);  // ✅ Check every 2 minutes
+    timer->start(120000);  // Check every 2 minutes
 }
 
 // ✅ Fetch the latest commit from GitHub API and send it to IRC
@@ -51,9 +48,12 @@ void check_for_new_commits() {
             pqxx::connection conn(DB_CONN);
             pqxx::work txn(conn);
 
-            // ✅ Get last processed commit from the database
+            // ✅ Get last processed commit from the database with null check
             pqxx::result res = txn.exec_params("SELECT last_commit_sha FROM tracked_repos WHERE repo_name = $1;", repo);
-            std::string last_commit_sha = res.empty() ? "" : res[0][0].as<std::string>();
+            std::string last_commit_sha = "";
+            if (!res.empty() && !res[0][0].is_null()) {
+                last_commit_sha = res[0][0].as<std::string>();
+            }
 
             // ✅ Fetch the last 3 commits from GitHub
             std::string url = "https://api.github.com/repos/" + repo + "/commits?per_page=3";
@@ -75,8 +75,9 @@ void check_for_new_commits() {
                     std::string message = commit["commit"]["message"].get<std::string>();
                     std::string commit_url = "https://github.com/" + repo + "/commit/" + sha;
 
+                    // Stop if we reach the last known commit
                     if (sha == last_commit_sha) {
-                        break;  // ✅ Stop if we reach the last known commit
+                        break;
                     }
 
                     found_new_commit = true;
@@ -84,37 +85,36 @@ void check_for_new_commits() {
                     // ✅ Store commit in database
                     store_commit_info(repo, sha, author, message, commit_url, 0, 0, 0);
 
-                    // ✅ Store commit message for sending later
+                    // ✅ Build plain text IRC message
                     std::string irc_message = "[" + repo + "] " + author + " " + sha.substr(0, 7) +
                                               " - " + message + " (" + commit_url + ")";
                     new_commits.push_back(irc_message);
                 }
 
-                // ✅ Send messages in **chronological order** (oldest → newest)
+                // ✅ Send messages in chronological order (oldest → newest)
                 std::reverse(new_commits.begin(), new_commits.end());
                 for (const auto& msg : new_commits) {
                     send_irc_message(msg);
                 }
 
-                // ✅ Update last known commit **only if new commits were found**
+                // ✅ Update last known commit only if new commits were found
                 if (found_new_commit && !commits.empty()) {
                     std::string new_commit_sha = commits[0]["sha"].get<std::string>();
                     txn.exec_params("UPDATE tracked_repos SET last_commit_sha = $1 WHERE repo_name = $2;", new_commit_sha, repo);
-                    txn.commit();
-                    spdlog::info("✅ Updated last commit for {} to {}", repo, new_commit_sha);
+                    spdlog::info("Updated last commit for {} to {}", repo, new_commit_sha);
                 }
-
+                txn.commit();
             } else {
-                spdlog::error("❌ Failed to fetch commits for {}. HTTP Status: {}", repo, response.status_code);
+                spdlog::error("Failed to fetch commits for {}. HTTP Status: {}", repo, response.status_code);
             }
 
         } catch (const std::exception& e) {
-            spdlog::error("❌ Error processing commits for {}: {}", repo, e.what());
+            spdlog::error("Error processing commits for {}: {}", repo, e.what());
         }
     }
 }
 
-// ✅ Fetch the latest commit **live from GitHub API**
+// ✅ Fetch the latest commit live from GitHub API
 std::string get_last_commit(const std::string& repo) {
     std::string url = "https://api.github.com/repos/" + repo + "/commits?page=1&per_page=1";
 
@@ -135,8 +135,9 @@ std::string get_last_commit(const std::string& repo) {
                 std::string message = commits[0]["commit"]["message"];
                 std::string commit_url = "https://github.com/" + repo + "/commit/" + sha;
 
-                return "📝 Latest commit: " + sha.substr(0, 7) + " by " + author +
-                       " - " + message + " (" + commit_url + ")";
+                std::string irc_message = "[" + repo + "] " + author + " " + sha.substr(0, 7) +
+                                           " - " + message + " (" + commit_url + ")";
+                return irc_message;
             } else {
                 return "⚠️ No commits found for " + repo;
             }

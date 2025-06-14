@@ -1,13 +1,14 @@
 CXX = g++
 MOC = moc
-CXXFLAGS = -std=c++17 -Wall -fPIC -DIRC_SHARED -Iincludes -Ilibs/fmt/include -Ilibs/spdlog/include -Ilibs/loguru \
+CXXFLAGS = -std=c++17 -Wall -fPIC -DIRC_SHARED -Iincludes -Ilibs/spdlog/include \
 -I/usr/include/boost -I/usr/include -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtCore \
--I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/home/debian/irc/Bots/gitbot++/libs/libcommuni/include \
--I/home/debian/irc/Bots/gitbot++/libs/libcommuni/include/IrcCore -I/home/debian/irc/Bots/gitbot++/libs/libcommuni/include/IrcModel \
--I/home/debian/irc/Bots/gitbot++/libs/libcommuni/include/IrcUtil
+-I/usr/include/x86_64-linux-gnu/qt5/QtNetwork -I/home/reverse/irc/bots/botHub/libs/libcommuni/include \
+-I/home/reverse/irc/bots/botHub/libs/libcommuni/include/IrcCore -I/home/reverse/irc/bots/botHub/libs/libcommuni/include/IrcModel \
+-I/home/reverse/irc/bots/botHub/libs/libcommuni/include/IrcUtil
 
-LDFLAGS = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lpugixml -lfmt -lspdlog -lloguru -lpqxx -lpq -lboost_system -lpthread \
--lcpr -lssl -lcrypto -lcurl -lQt5Core -lQt5Network -lIrcCore -lIrcModel -lIrcUtil
+LDFLAGS = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -L/home/reverse/irc/bots/botHub/libs/libcommuni/lib \
+    -lpugixml -lspdlog -lpqxx -lpq -lboost_system -lpthread \
+    -lcpr -lssl -lcrypto -lcurl -lQt5Core -lQt5Network -lIrcCore -lIrcModel -lIrcUtil
 
 HEADERS += includes/irc_api.h
 
